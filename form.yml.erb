@@ -1,0 +1,75 @@
+<%-
+  # Grab the projects P#####
+  groups = OodSupport::User.new.groups.sort_by(&:id).tap { |groups|
+    groups.unshift(groups.delete(OodSupport::Process.group))
+  }.map(&:name).grep(/^P./)
+
+  classrooms = OodAppkit.clusters.each_with_object({}) do |cluster, hash|
+    if cluster.kubernetes?
+      hash.merge!(cluster.custom_config[:classrooms].to_h)
+    end
+  end.select do |k,v|
+    k.start_with?('stable-diffusion') && groups.include?(v)
+  end.map do |k,v|
+    tokens = k.gsub('stable-diffusion/', '').split('/')
+
+    {
+      name: tokens[0].nil? ? 'unknown' : tokens[0],
+      size: tokens[1].nil? ? 1 : tokens[1].to_i,
+      time: tokens[2].nil? ? 1 : tokens[2].to_i,
+      compute_cluster: tokens[3].nil? ? 'kubernetes' : tokens[3].to_s,
+      account: v,
+    }
+  end
+-%>
+---
+cluster:
+  - "kubernetes"
+  - "kubernetes-test"
+  - "kubernetes-dev"
+form:
+  - classroom
+  - account
+  - bc_num_hours
+  - cuda_version
+  - compute_cluster
+  - time
+  - auto_groups
+  - gpus_per_node
+attributes:
+  gpus_per_node:
+    widget: "hidden_field"
+    value: "1"
+  account:
+    widget: "hidden_field"
+  bc_num_hours:
+    label: "Hours"
+  compute_cluster:
+    widget: "hidden_field"
+    value: "kubernetes"
+  cuda_version:
+    widget: "hidden_field"
+    label: "CUDA Version"
+    value:   "cuda/11.2.2"
+  classroom:
+  <%- if classrooms.size >= 1 -%>
+    widget: select
+    options:
+      <%- classrooms.each do |cr| %>
+      - [
+        "<%= cr[:name].gsub('_', ' ') %>", "<%= cr[:name] %>",
+        data-set-account: "<%= cr[:account] %>",
+        data-set-compute-cluster: "<%= cr[:compute_cluster] %>",
+        ]
+      <%- end %>
+  <%- else -%>
+    widget: select
+    options:
+      - [
+          "test", "PZS1118"
+        ]
+  <%- end -%>
+
+  time:
+    widget: "hidden_field"
+    value: "1.5"

@@ -1,0 +1,9 @@
+---
+name: Stable Diffusion
+category: Interactive Apps
+subcategory: Servers
+role: batch_connect
+description: |
+  This app will launch a [Stable Diffusion WebUI Server] for use in a classroom.
+
+  [Stable Diffusion WebUI]: https://github.com/AUTOMATIC1111/stable-diffusion-webui

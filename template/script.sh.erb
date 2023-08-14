@@ -1,0 +1,37 @@
+# below derived from:
+# https://github.com/AUTOMATIC1111/stable-diffusion-webui#automatic-installation-on-linux
+
+
+module purge
+
+export OSC_CLASS_ID="<%= context.classroom %>"
+export OSC_PROJECT_ID="<%= context.account %>"
+
+# https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Dependencies#required-dependencies
+
+module load project/classroom python/3.9-2022.05 git/2.39.0
+
+# need the stable diffusion environment setup
+
+CLASS_DIR="$HOME/osc_classes/${OSC_CLASS_ID:-osc_class}"
+
+# Copy over classroom materials if the env variable exists
+if [[ -n "$OSC_CLASS_FILES" ]]; then
+  set -x  
+  mkdir -p "$CLASS_DIR"
+  touch "$CLASS_DIR/0_${OSC_CLASS_ID:-osc_class}.md"
+  rsync -avz --ignore-existing "$OSC_CLASS_FILES" "$CLASS_DIR"
+  { set +x; } 2>/dev/null
+fi
+
+# debug
+module list
+set -x
+
+# Launch Sever
+echo "Starting Stable Diffusion..."
+
+# mount the launch.py file and run
+# set the container mounts in the submit then use those in the --data-directory flag
+
+./launch.py --data-dir "/ess/<%= context.username %>"
