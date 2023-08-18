@@ -17,6 +17,7 @@ mkdir -p $CLASS_DIR/extensions
 OUT_DIR="$CLASS_DIR/outputs"
 mkdir -p $OUT_DIR
 
+
 CONFIG="$PWD/config.json"
 
 cat <<< $(jq --arg out "$OUT_DIR" '.outdir_samples = $out' $CONFIG) > $CONFIG
@@ -55,6 +56,13 @@ export CUDA_9c74391b="$REAL_DEVICE=6G"
 
 # Launch Sever
 echo "Starting Stable Diffusion..."
+
+# FIXME - need to retrieve from module
+OSC_MODEL_DIR="/fs/ess/PZS1118/STABLE_DIFFUSION_TEST/models"
+# OSC_MODEL_DIR="/apps/project/ondemand/app_stable_diffusion/1.5.1/stable-diffusion-webui/models"
+
+cd $CLASS_DIR
+ln -s $OSC_MODEL_DIR || true
 
 cd $OSC_STABLE_DIFFUSION_PATH
 
