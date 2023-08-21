@@ -7,13 +7,38 @@ module purge
 export OSC_CLASS_ID="<%= context.classroom %>"
 export OSC_PROJECT_ID="<%= context.account %>"
 
-# https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Dependencies#required-dependencies
+module load project/ondemand python/3.9-2022.05 git/2.39.0
+module load app_stable_diffusion/1.5.1
 
-module load project/classroom python/3.9-2022.05 git/2.39.0
-
-# need the stable diffusion environment setup
-
+export OSC_CLASS_ID='stable-diff-dev'
 CLASS_DIR="$HOME/osc_classes/${OSC_CLASS_ID:-osc_class}"
+
+mkdir -p $CLASS_DIR/extensions
+OUT_DIR="$CLASS_DIR/outputs"
+mkdir -p $OUT_DIR
+
+
+CONFIG="$PWD/config.json"
+
+cat <<< $(jq --arg out "$OUT_DIR" '.outdir_samples = $out' $CONFIG) > $CONFIG
+cat <<< $(jq --arg out "$OUT_DIR" '.outdir_txt2img_samples = $out' $CONFIG) > $CONFIG
+cat <<< $(jq --arg out "$OUT_DIR" '.outdir_img2img_samples = $out' $CONFIG) > $CONFIG
+cat <<< $(jq --arg out "$OUT_DIR" '.outdir_extras_samples = $out' $CONFIG) > $CONFIG
+cat <<< $(jq --arg out "$OUT_DIR" '.outdir_grids = $out' $CONFIG) > $CONFIG
+cat <<< $(jq --arg out "$OUT_DIR" '.outdir_txt2img_grids = $out' $CONFIG) > $CONFIG
+cat <<< $(jq --arg out "$OUT_DIR" '.outdir_img2img_grids = $out' $CONFIG) > $CONFIG
+cat <<< $(jq --arg out "$OUT_DIR" '.outdir_save = $out' $CONFIG) > $CONFIG
+cat <<< $(jq --arg out "$OUT_DIR" '.outdir_init_images = $out' $CONFIG) > $CONFIG
+
+
+FILES=$(ls /dev/nvidia*)
+
+for f in $FILES; do
+  DEVICE=$(basename "$f" | sed -rn 's#^nvidia([0-9]+)$#\1#p')
+  if [[ -n "$DEVICE" ]]; then
+    export REAL_DEVICE=$DEVICE
+  fi
+done
 
 # Copy over classroom materials if the env variable exists
 if [[ -n "$OSC_CLASS_FILES" ]]; then
@@ -27,11 +52,31 @@ fi
 # debug
 module list
 set -x
+export CUDA_9c74391b="$REAL_DEVICE=6G"
 
 # Launch Sever
 echo "Starting Stable Diffusion..."
 
-# mount the launch.py file and run
-# set the container mounts in the submit then use those in the --data-directory flag
+# FIXME - need to retrieve from module
+OSC_MODEL_DIR="/fs/ess/PZS1118/STABLE_DIFFUSION_TEST/models"
+# OSC_MODEL_DIR="/apps/project/ondemand/app_stable_diffusion/1.5.1/stable-diffusion-webui/models"
 
-./launch.py --data-dir "/ess/<%= context.username %>"
+cd $CLASS_DIR
+ln -s $OSC_MODEL_DIR || true
+
+cd $OSC_STABLE_DIFFUSION_PATH
+
+# it's OK to have the passowrd in the command because it's running in k8s.
+# nobody should be able to exec into the container and see it anyhow.
+python $OSC_STABLE_DIFFUSION_PATH/launch.py \
+  --data-dir "$CLASS_DIR" \
+  --ui-settings-file "$CONFIG" \
+  --gradio-auth <%= CurrentUser.name %>:$password \
+  --api-auth <%= CurrentUser.name %>:$password \
+  --skip-install \
+  --port $port \
+  --listen \
+  --skip-prepare-environment \
+  --subpath "rnode/$HOST_CFG/$PORT_CFG" \
+  --server-name $(hostname) \
+  --no-half

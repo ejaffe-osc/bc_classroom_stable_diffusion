@@ -1,22 +1,19 @@
 <%
-  err_msg = "You are not a part of any classroom project. Restarting your web \
-  server in the help menu may fix the issue. You may also have to wait if you've \
-  recently been added to the project. Reach out to your instructor or \
-  contact support through the help menu."
+  err_msg = "You are not a part of any classroom project. Restarting your web \n\
+server in the help menu may fix the issue. You may also have to wait if you've \n\
+recently been added to the project. Reach out to your instructor or \n\
+contact support through the help menu."
 
   raise StandardError, err_msg  if classroom == 'no_classroom'
 
   mounts = {
     'home'    => OodSupport::User.new.home,
     'support' => OodSupport::User.new('support').home,
-    'project' => '/ess/project',
+    'ess' => '/fs/ess'
   }
 
-  container_sizes = {
-    'art': {
-      'memory': 2
-    },
-  }
+  cluster_fs = 'pitzer'
+  apps_path = cluster_fs == 'pitzer' ? '/apps' : '/usr/local'
 
 -%>
 
@@ -24,6 +21,7 @@
 batch_connect:
   template: "basic"
 script:
+  gpus_per_node: 1
   accounting_id: "<%= account %>"
   wall_time: "<%= time.to_f * 3600 %>"
   native:
@@ -31,18 +29,61 @@ script:
       name: "stable-diffusion"
       image: "docker-registry.osc.edu/ondemand/ondemand-base-rhel7:0.10.0"
       image_pull_policy: "IfNotPresent"
-
+      command: ["/bin/bash","-l","<%= staged_root %>/job_script_content.sh"]
       restart_policy: 'OnFailure'
       env:
         KUBECONFIG: "/dev/null"
-        HOME: "/stable-diffusion"
       port: "8080"
-      memory: "<%= container_sizes[size.to_sym][:memory] %>Gi"
+      cpu: "1000m"
+      memory: "6Gi"
     node_selector:
-      cluster: 'kubernetes'
-    mounts: [
-      type: 'host',
-      name: '/users/PZS0714/travert/ondemand/dev/bc_osc_stable_diffusion'
-    command: ["/bin/bash","-l","<%= staged_root %>/launch.py"]
-    ]
+      node-role.kubernetes.io/ondemand: ''
+    mounts:
+    <%- mounts.each_pair do |name, mount| -%>
+      - type: host
+        name: <%= name %>
+        host_type: Directory
+        path: <%= mount %>
+        destination_path: <%= mount %>
+    <%- end -%>
+      - type: host
+        name: munge-socket
+        host_type: Socket
+        path: /var/run/munge/munge.socket.2
+        destination_path: /var/run/munge/munge.socket.2
+      - type: host
+        name: slurm-conf
+        host_type: Directory
+        path: /etc/slurm
+        destination_path: /etc/slurm
+      - type: host
+        name: sssd-pipes
+        host_type: Directory
+        path: /var/lib/sss/pipes
+        destination_path: /var/lib/sss/pipes
+      - type: host
+        name: sssd-conf
+        host_type: Directory
+        path: /etc/sssd
+        destination_path: /etc/sssd
+      - type: host
+        name: nsswitch
+        host_type: File
+        path: /etc/nsswitch.conf
+        destination_path: /etc/nsswitch.conf
+      - type: host
+        name: lmod-init
+        host_type: File
+        path: /apps/<%= cluster_fs %>/lmod/lmod.sh
+        destination_path: /etc/profile.d/lmod.sh
+      - type: host
+        name: intel
+        host_type: Directory
+        path: /nfsroot/<%= cluster_fs %>/opt/intel
+        destination_path: /opt/intel
+      - type: host
+        name: apps
+        host_type: Directory
+        path: "/apps/<%= cluster_fs %>"
+        destination_path: "<%= apps_path %>"
 

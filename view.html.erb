@@ -1,8 +1,33 @@
+<%-
+  base_url = "/rnode/#{host}/#{port}/"
+-%>
 
-<form action="/rnode/<%= host %>/<%= port %>/auth-do-sign-in" method="post" target="_blank">
-  <input type="hidden" name="username" value="<%= ENV["USER"] %>">
-  <input type="hidden" name="password" value="<%= password %>">
-  <button class="btn btn-primary" type="submit">
-    <i class="fa fa-registered"></i> Connect to Stable Diffusion
-  </button>
-</form>
+<!-- login and set a token cookie so the link below works -->
+<script type="text/javascript">
+  (function () {
+
+    let url = "<%= base_url %>".replaceAll('/', '_')
+    let today = new Date().toISOString().split('T')[0].replaceAll('-', '_');
+    let key = `stable_diff_${url}_${today}`;
+    let alreadyDone = localStorage.getItem(key);
+
+    if(alreadyDone == undefined || alreadyDone === "false") {
+      let formData = new FormData();
+      formData.append('username', '<%= CurrentUser.name %>');
+      formData.append('password', '<%= password %>');
+
+      fetch("/rnode/<%= host %>/<%= port %>/login", {
+        method: 'POST',
+        body: formData
+      }).then((response) => {
+        if(response.ok) {
+          localStorage.setItem(key, true);
+        }
+      }).catch((err) => {});
+    }
+  })();
+</script>
+
+<a class="btn btn-primary" href="<%= base_url %>" target="_blank">
+  <i class="fa fa-registered"></i> Connect to Stable Diffusion
+</a>
