@@ -1,24 +1,18 @@
 #!/bin/bash
 
-# below derived from:
-# https://github.com/AUTOMATIC1111/stable-diffusion-webui#automatic-installation-on-linux
-
-
 module purge
 
 export OSC_CLASS_ID="<%= context.classroom %>"
 export OSC_PROJECT_ID="<%= context.account %>"
 
-module load project/ondemand python/3.9-2022.05 git/2.39.0
-module load app_stable_diffusion/1.5.1
+module load project/classroom python/3.9-2022.05 git/2.39.0
+module load classroom_stable_diffusion/<%= context.classroom %>
 
-export OSC_CLASS_ID='stable-diff-dev'
 CLASS_DIR="$HOME/osc_classes/${OSC_CLASS_ID:-osc_class}"
 
 mkdir -p $CLASS_DIR/extensions
 OUT_DIR="$CLASS_DIR/outputs"
 mkdir -p $OUT_DIR
-
 
 CONFIG="$PWD/config.json"
 
@@ -58,10 +52,6 @@ export CUDA_9c74391b="$REAL_DEVICE=6G"
 
 # Launch Sever
 echo "Starting Stable Diffusion..."
-
-# FIXME - need to retrieve from module
-OSC_MODEL_DIR="/fs/ess/PZS1118/STABLE_DIFFUSION_TEST/models"
-# OSC_MODEL_DIR="/apps/project/ondemand/app_stable_diffusion/1.5.1/stable-diffusion-webui/models"
 
 cd $CLASS_DIR
 ln -s $OSC_MODEL_DIR || true
