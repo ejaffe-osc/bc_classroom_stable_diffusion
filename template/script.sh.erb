@@ -13,6 +13,9 @@ CLASS_DIR="$HOME/osc_classes/${OSC_CLASS_ID:-osc_class}"
 mkdir -p $CLASS_DIR/extensions
 OUT_DIR="$OSC_OUTPUT_DIR/$(whoami)"
 mkdir -p $OUT_DIR
+setfacl -b $OUT_DIR
+chmod 700 $OUT_DIR
+setfacl -d -m "u:$OSC_CLASS_PI:rwX" $OUT_DIR
 
 CONFIG="$PWD/config.json"
 
