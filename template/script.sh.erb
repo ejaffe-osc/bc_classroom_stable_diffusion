@@ -14,7 +14,8 @@ mkdir -p $CLASS_DIR/extensions
 OUT_DIR="$OSC_OUTPUT_DIR/$(whoami)"
 mkdir -p $OUT_DIR
 setfacl -m 'g::---' $OUT_DIR
-setfacl -m 'g:$OSC_PROJECT_ID:---' $OUT_DIR
+setfacl -m "g:$OSC_PROJECT_ID:---" $OUT_DIR
+
 
 CONFIG="$PWD/config.json"
 
