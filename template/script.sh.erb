@@ -13,9 +13,8 @@ CLASS_DIR="$HOME/osc_classes/${OSC_CLASS_ID:-osc_class}"
 mkdir -p $CLASS_DIR/extensions
 OUT_DIR="$OSC_OUTPUT_DIR/$(whoami)"
 mkdir -p $OUT_DIR
-setfacl -b $OUT_DIR
-chmod 700 $OUT_DIR
-setfacl -d -m "u:$OSC_CLASS_PI:rwX" $OUT_DIR
+setfacl -m 'g::---' $OUT_DIR
+setfacl -m 'g:$OSC_PROJECT_ID:---' $OUT_DIR
 
 CONFIG="$PWD/config.json"
 
@@ -74,5 +73,4 @@ python $OSC_STABLE_DIFFUSION_PATH/launch.py \
   --skip-prepare-environment \
   --subpath "rnode/$HOST_CFG/$PORT_CFG" \
   --server-name $(hostname) \
-  --lowvram
   --no-half
