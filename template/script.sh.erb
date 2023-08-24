@@ -5,14 +5,17 @@ module purge
 export OSC_CLASS_ID="<%= context.classroom %>"
 export OSC_PROJECT_ID="<%= context.account %>"
 
-module load project/classroom python/3.9-2022.05 git/2.39.0
+module load project/classroom python/3.9-2022.05
 module load classroom_stable_diffusion/<%= context.classroom %>
 
 CLASS_DIR="$HOME/osc_classes/${OSC_CLASS_ID:-osc_class}"
 
 mkdir -p $CLASS_DIR/extensions
-OUT_DIR="$CLASS_DIR/outputs"
+OUT_DIR="$OSC_OUTPUT_DIR/$(whoami)"
 mkdir -p $OUT_DIR
+setfacl -b $OUT_DIR
+chmod 700 $OUT_DIR
+setfacl -d -m "u:$OSC_CLASS_PI:rwX" $OUT_DIR
 
 CONFIG="$PWD/config.json"
 
