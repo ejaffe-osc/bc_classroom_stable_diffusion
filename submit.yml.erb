@@ -23,7 +23,7 @@ batch_connect:
 script:
   gpus_per_node: 1
   accounting_id: "<%= account %>"
-  wall_time: "<%= time.to_f * 3600 %>"
+  wall_time: "<%= hours.to_f * 3600 %>"
   native:
     container:
       name: "stable-diffusion"
