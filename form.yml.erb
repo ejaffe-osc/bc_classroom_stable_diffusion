@@ -29,6 +29,7 @@
           size: size_to_num(class_config.fetch('size', 'small')),
           hours: class_config.fetch('hours', 1).to_i,
           account: class_config.fetch('project', nil),
+          extra_gpu_mem: class_config.fetch('extra_gpu_mem', false),
           cluster: cluster_id
         }
 
@@ -48,11 +49,16 @@ cluster:
 form:
   - classroom
   - account
+  - extra_gpu_mem
   - hours
 
 attributes:
   account:
     widget: "hidden_field"
+  extra_gpu_mem:
+    widget: check_box
+    label: 30 GB GPU Memory
+    value: 0
   hours:
     widget: "select"
     options:
@@ -85,7 +91,11 @@ attributes:
       - [
         "<%= cr[:name].gsub('_', ' ') %>", "<%= cr[:name] %>",
         data-set-account: "<%= cr[:account] %>",
-        data-set-cluster: "<%= cr[:cluster] %>"
+        data-set-cluster: "<%= cr[:cluster] %>",
+        <%- if cr[:extra_gpu_mem] != true -%>
+        data-hide-extra-gpu-mem: true,
+        data-set-extra-gpu-mem: 0,
+        <%- end -%>
         ]
       <%- end %>
   <%- else -%>

@@ -51,7 +51,7 @@ fi
 # debug
 module list
 set -x
-export CUDA_9c74391b="$REAL_DEVICE=10G"
+export CUDA_9c74391b="$REAL_DEVICE=<%= context.extra_gpu_mem.to_i.positive? ? '30' : '10' %>G"
 
 # Launch Sever
 echo "Starting Stable Diffusion..."

@@ -21,7 +21,7 @@ contact support through the help menu."
 batch_connect:
   template: "basic"
 script:
-  gpus_per_node: 1
+  gpus_per_node: <%= extra_gpu_mem.to_i.positive? ? '3' : '1' %>
   accounting_id: "<%= account %>"
   wall_time: "<%= hours.to_f * 3600 %>"
   native:
