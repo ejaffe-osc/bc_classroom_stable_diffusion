@@ -12,8 +12,8 @@ contact support through the help menu."
     'ess' => '/fs/ess'
   }
 
-  cluster_fs = 'pitzer'
-  apps_path = cluster_fs == 'pitzer' ? '/apps' : '/usr/local'
+  cluster_fs = 'ascend'
+  apps_path = '/apps'
 
 -%>
 
@@ -27,7 +27,7 @@ script:
   native:
     container:
       name: "stable-diffusion"
-      image: "docker-registry.osc.edu/ondemand/ondemand-base-rhel7:0.10.0"
+      image: "docker-registry.osc.edu/ondemand/ondemand-base-rhel9:0.13.0"
       image_pull_policy: "IfNotPresent"
       command: ["/bin/bash","-l","<%= staged_root %>/job_script_content.sh"]
       restart_policy: 'OnFailure'
@@ -76,11 +76,6 @@ script:
         host_type: File
         path: /apps/<%= cluster_fs %>/lmod/lmod.sh
         destination_path: /etc/profile.d/lmod.sh
-      - type: host
-        name: intel
-        host_type: Directory
-        path: /nfsroot/<%= cluster_fs %>/opt/intel
-        destination_path: /opt/intel
       - type: host
         name: apps
         host_type: Directory

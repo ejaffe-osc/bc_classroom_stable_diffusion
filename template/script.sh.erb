@@ -5,7 +5,7 @@ module purge
 export OSC_CLASS_ID="<%= context.classroom %>"
 export OSC_PROJECT_ID="<%= context.account %>"
 
-module load project/classroom python/3.9-2022.05
+module load project/classroom python/3.12
 module load classroom_stable_diffusion/<%= context.classroom %>
 
 CLASS_DIR="$HOME/osc_classes/${OSC_CLASS_ID:-osc_class}"
