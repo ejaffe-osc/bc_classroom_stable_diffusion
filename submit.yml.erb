@@ -38,6 +38,7 @@ script:
       memory: "30Gi"
     node_selector:
       node-role.kubernetes.io/ondemand: ''
+      nvidia.com/gpu.product: "NVIDIA-A100-PCIE-40GB-MIG-3g.20gb"
     mounts:
     <%- mounts.each_pair do |name, mount| -%>
       - type: host
