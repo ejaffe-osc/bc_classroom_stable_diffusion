@@ -30,15 +30,6 @@ cat <<< $(jq --arg out "$OUT_DIR" '.outdir_save = $out' $CONFIG) > $CONFIG
 cat <<< $(jq --arg out "$OUT_DIR" '.outdir_init_images = $out' $CONFIG) > $CONFIG
 
 
-FILES=$(ls /dev/nvidia*)
-
-for f in $FILES; do
-  DEVICE=$(basename "$f" | sed -rn 's#^nvidia([0-9]+)$#\1#p')
-  if [[ -n "$DEVICE" ]]; then
-    export REAL_DEVICE=$DEVICE
-  fi
-done
-
 # Copy over classroom materials if the env variable exists
 if [[ -n "$OSC_CLASS_FILES" ]]; then
   set -x  
@@ -51,7 +42,6 @@ fi
 # debug
 module list
 set -x
-export CUDA_9c74391b="$REAL_DEVICE=<%= context.extra_gpu_mem.to_i.positive? ? '30' : '10' %>G"
 
 # Launch Sever
 echo "Starting Stable Diffusion..."
